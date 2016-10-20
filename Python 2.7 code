@@ -1,0 +1,165 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep 26 17:36:22 2016
+
+@author: Tamas
+"""
+
+import os
+from datetime import datetime 
+
+
+def files_list(folder):
+    # check if there are only .h files
+    # then create file list with .h files
+    file_list_raw=os.listdir(folder)
+    file_list_final=[]
+    for curr in file_list_raw:
+        if ".h" in curr or ".H" in curr:
+            file_list_final.append(curr)
+                        
+    return file_list_final
+           
+def m2_2_m5(folder):    
+        
+        files=files_list(folder)
+        
+        for file in files:
+
+            lines = open(folder+ file).readlines()
+            last_line=len(lines)-1
+            # ha az utolso elotti sorban van m2/m30, akkor
+            string=lines[last_line-1]
+
+            #this gives the name for the saving
+            header=str(lines[0])[11:]
+            
+            if "M2" in string:
+                #print "true"
+                string=string.replace("M2","M5")
+                open(folder+ file, "w").writelines(lines[:-2])
+                open(folder+ file, "a").write( string )  
+                last_line=len(lines)-1
+                open(folder+ file, "a").write(str(last_line)+ " END PGM" + header )  
+                
+            if "m2" in string:
+                #print "true"
+                string=string.replace("m2","M5")
+                open(folder+ file, "w").writelines(lines[:-2])
+                open(folder+ file, "a").write( string )  
+                last_line=len(lines)-1
+                open(folder+ file, "a").write(str(last_line)+ " END PGM" + header )  
+ 
+            if "M02" in string:
+                #print "true"
+                string=string.replace("M02","M5")
+                open(folder+ file, "w").writelines(lines[:-2])
+                open(folder+ file, "a").write( string )  
+                last_line=len(lines)-1
+                open(folder+ file, "a").write(str(last_line)+ " END PGM" + header )  
+                
+            if "m02" in string:
+                #print "true"
+                string=string.replace("m02","M5")
+                open(folder+ file, "w").writelines(lines[:-2])
+                open(folder+ file, "a").write( string )  
+                last_line=len(lines)-1
+                open(folder+ file, "a").write(str(last_line)+ " END PGM" + header )  
+
+            if "M30" in string:
+                #print "true"
+                string=string.replace("M30","M5")
+                open(folder+ file, "w").writelines(lines[:-2])
+                open(folder+ file, "a").write( string )  
+                last_line=len(lines)-1
+                open(folder+ file, "a").write(str(last_line)+ " END PGM" + header )  
+
+            if "m30" in string:
+                #print "true"
+                string=string.replace("m30","M5")
+                open(folder+ file, "w").writelines(lines[:-2])
+                open(folder+ file, "a").write( string )  
+                last_line=len(lines)-1
+                open(folder+ file, "a").write(str(last_line)+ " END PGM" + header )  
+
+                
+def procedura(folder):
+    # 1- get filenames from a folder
+    
+    file_list=files_list(folder)
+    
+    if "PROCEDURA.H" in file_list:
+        file_list.remove("PROCEDURA.H")
+        print "Il vecchio procedura viene sovrascritto"
+    
+    lines="0 BEGIN PGM PROCEDURA MM\n"
+    lines=lines+"1 BLK FORM 0.1 Z  X-200 Y-100 Z+0\n"
+    lines=lines+"2 BLK FORM 0.2  X+200 Y+100 Z+100\n"
+    lines=lines+"3 ;\n"
+    lines=lines+"4 ;Creato: "+ str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')) + " TomSoft V1.0\n"
+    lines=lines+"5 M323\n"    
+    lines=lines+"6 ;\n"
+    lines=lines+"7 CYCL DEF 247 DEF.ZERO PEZZO Q339=+1\n"
+    i=8
+    for file_name in file_list:
+        lines=lines + str(i) + " CALL PGM TNC:\MASTER\MASTER-1\\" + file_name + "\n"
+        i=i+1
+    i=i+1
+    lines=lines+str(i)+" ;\n"
+    i=i+1
+    lines=lines+str(i)+" M324\n" 
+    i=i+1
+    lines=lines+"/"+str(i)+" M50\n" 
+    i=i+1
+    lines=lines+str(i)+" M30\n" 
+    i=i+1
+    lines=lines+str(i)+" END PGM PROCEDURA MM" 
+    open(folder+"PROCEDURA.H", "w").writelines(lines)
+    
+    print " Il procedura ha creato e salvato nella cartella\n "
+    raw_input(" premere invio per continuare")
+    
+
+if __name__ == "__main__":
+    print "\n Benvenuti al TomSoft 1.1 \n\n "
+    
+    print " Scegli cartella per creare Procedura.h file dentro cartella.\n Program rimuove M30/M2 al fine tutti file in cartella scelto.\n\n"
+    i=int(input(" Che cartella si desidera creare procedura?[1-7] ")    )
+    # files=os.listdir("c:\TomSoft\cartelle")  
+   
+ #♥   print i, "ezt adtad meg"
+    
+    if i in range(1,8):
+        choices=[]
+        f=open("c:\TomSoft\cartelle\master"+str(i)+".txt","r")
+     #©   print f,"az elérési ut"
+        readed=f.read()
+     #   print readed,"a fájl tartalma"
+        choices.append(readed)
+        f.close()
+    else:
+        print " Si prega di dare un numero 1-7"
+        raw_input(" premere enter per continuare")
+        quit()
+
+#    items=int(len(choices)-1)
+#    i=1
+#    for item in choices:
+#        print item
+#        f=open("c:\TomSoft\master"+str(i)+".txt","w")
+#        f.write(str(item))
+#        i=i+1
+#        f.close()
+        
+
+    
+    if os.path.isdir(readed):
+
+        m2_2_m5(readed)
+
+        procedura(readed) 
+        
+    else:
+        print "La cartella data non è esiste!"
+        raw_input("premere enter per continuare")
+        quit()
